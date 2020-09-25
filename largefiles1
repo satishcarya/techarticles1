@@ -1,0 +1,217 @@
+How To Find Largest Top 10 Files and Directories On Linux / UNIX / BSD
+How do I find the largest top files and directories on a Linux or Unix-like operating systems?
+
+Sometimes it is necessary to know what file(s) or directories are eating up all your disk space. Further, it may be required to find out it at the particular directory location on filesystem such as /tmp/ or /var/ or /home/. This guide will help you to use Unix and Linux command for finding the largest or biggest the files or directories on the filesystem.
+
+How to find out top 10 files and directories on Linux or Unix
+There is no simple command available to find out the largest files/directories on a Linux/UNIX/BSD filesystem. However, combination of following three commands (using pipes) you can easily find out list of largest files: Steps to find Largest Directories in Linux
+
+du command : Estimate file space usage.
+sort command : Sort lines of text files or given input data.
+head command : Output the first part of files i.e. to display first 10 largest file.
+find command : Search file.
+How to find out top Directories and files in Linux
+Type the following command at the shell prompt to find out top 10 largest file/directories:
+# du -a /var | sort -n -r | head -n 10
+
+Sample outputs:
+
+1008372 /var
+313236  /var/www
+253964  /var/log
+192544  /var/lib
+152628  /var/spool
+152508  /var/spool/squid
+136524  /var/spool/squid/00
+95736   /var/log/mrtg.log
+74688   /var/log/squid
+62544   /var/cache
+If you want more human readable output try (works with GNU/Linux du version/user only):
+$ cd /path/to/some/where
+$ du -hsx * | sort -rh | head -10
+$ du -hsx -- * | sort -rh | head -10
+
+Where,
+
+du command -h option : display sizes in human readable format (e.g., 1K, 234M, 2G).
+du command -s option : show only a total for each argument (summary).
+du command -x option : skip directories on different file systems.
+sort command -r option : reverse the result of comparisons.
+sort command -h option : compare human readable numbers. This is GNU sort specific option only.
+head command -10 OR -n 10 option : show the first 10 lines.
+The above command will only work of GNU/sort is installed. Other Unix like operating system should use the following version (see comments below):
+
+for i in G M K
+do 
+  du -ah | grep [0-9]$i | sort -nr -k 1
+done | head -n 11
+Sample outputs:
+
+179M	.
+84M	./uploads
+57M	./images
+51M	./images/faq
+49M	./images/faq/2013
+48M	./uploads/cms
+37M	./videos/faq/2013/12
+37M	./videos/faq/2013
+37M	./videos/faq
+37M	./videos
+36M	./uploads/faq
+Find the largest file in a directory and its subdirectories using the find command
+Type the following GNU/find command:
+
+## Warning: only works with GNU find ##
+find /path/to/dir/ -printf '%s %p\n'| sort -nr | head -10
+find . -printf '%s %p\n'| sort -nr | head -10
+Sample outputs:
+
+5700875 ./images/faq/2013/11/iftop-outputs.gif
+5459671 ./videos/faq/2013/12/glances/glances.webm
+5091119 ./videos/faq/2013/12/glances/glances.ogv
+4706278 ./images/faq/2013/09/cyberciti.biz.linux.wallpapers_r0x1.tar.gz
+3911341 ./videos/faq/2013/12/vim-exit/vim-exit.ogv
+3640181 ./videos/faq/2013/12/python-subprocess/python-subprocess.webm
+3571712 ./images/faq/2013/12/glances-demo-large.gif
+3222684 ./videos/faq/2013/12/vim-exit/vim-exit.mp4
+3198164 ./videos/faq/2013/12/python-subprocess/python-subprocess.ogv
+3056537 ./images/faq/2013/08/debian-as-parent-distribution.png.bak
+You can skip directories and only display files, type:
+
+## How to Find Out Top Directories and Files (Disk Space) in Linux Using Find ##
+find /path/to/search/ -type f -printf '%s %p\n'| sort -nr | head -10
+OR
+
+## another option ##
+find /path/to/search/ -type f -iname "*.mp4" -printf '%s %p\n'| sort -nr | head -10
+Hunt down disk space hogs with ducks
+Let us find out top directories and files using disk space in Linux or Unix with help of the following bash shell alias:
+
+## shell alias ##  
+alias ducks='du -cks * | sort -rn | head'
+## deal with special files names ##
+alias ducks='du -cks -- * | sort -rn | head'
+Finding all large files in the root filesystem
+Viewed 400k times
+
+136
+
+
+65
+I have a linux server, which currently has below space usage:
+
+/dev/sda3              20G   15G  4.2G  78% /
+/dev/sda6              68G   42G   23G  65% /u01
+/dev/sda2              30G  7.4G   21G  27% /opt
+/dev/sda1              99M   19M   76M  20% /boot
+tmpfs                  48G  8.2G   39G  18% /dev/shm
+As you can see. / is at 78%. I want to check, which files or folders are consuming space.
+
+I tried this:
+
+find . -type d -size +100M
+Which shows result like this:
+
+./u01/app/june01.dbf
+./u01/app/temp01.dbf
+./u01/app/smprd501.dbf
+./home/abhishek/centos.iso
+./home/abhishek/filegroup128.jar
+Now this is my issue. I only want the name of those files located in folders that are consuming space at / and not at /u01 or /home. Since / is base of everything, it is showing me every file of my server.
+
+Is is possible to get big files that is contributing to 78% of / ?
+
+find disk-usage
+share  edit  follow 
+
+Get updates on questions and answers
+edited Jul 2 '14 at 22:33
+
+Gilles 'SO- stop being evil'
+624k151151 gold badges12811281 silver badges17961796 bronze badges
+asked Jul 2 '14 at 12:26
+
+Abhishek dot py
+1,71344 gold badges1111 silver badges1313 bronze badges
+3
+See the -xdev find predicate. See also du -kx / | xdu (or xdiskusage). – Stéphane Chazelas Jul 2 '14 at 12:30 
+See also my answer to a related question. – jofel Jul 2 '14 at 13:32
+1
+relevant find . -type f -print | xargs du -sk | sort -rn – user13107 Jul 2 '14 at 14:54 
+Related: stackoverflow.com/questions/12522269/… – Ciro Santilli 冠状病毒审查六四事件法轮功 May 21 '19 at 13:34
+add a comment
+3 Answers
+Active
+Oldest
+Votes
+
+237
+
+Try:
+
+find / -xdev -type f -size +100M
+It lists all files that has size bigger than 100M.
+
+If you want to know about directory, you can try ncdu.
+
+If you aren't running Linux, you may need to use -size +204800 or -size +104857600c, as the M suffix to mean megabytes isn't in POSIX.
+
+find / -xdev -type f -size +102400000c
+share  edit  follow 
+edited Jul 3 '14 at 5:25
+answered Jul 2 '14 at 12:41
+
+cuonglm
+122k3030 gold badges252252 silver badges346346 bronze badges
+3
+-xdev just prevents find from walking across filesystems, so you'll only search your current physical drive. If that's not what you want, just remove the -xdev arg. – hobs Jan 13 '19 at 5:58
+add a comment
+
+51
+
+In addition to @Gnouc answer , you can also add ls -la to get more details. You should have sudo privileges to do that .
+
+$ find / -xdev -type f -size +100M -exec ls -la {} \; | sort -nk 5
+To only see files that are in the gigbyte, do:
+
+root# du -ahx / | grep -E '\d+G\s+'
+
+
+1.8G    /.Spotlight-V100/Store-V2/A960D58E-A644-4497-B3C1-866A529BF919
+1.8G    /.Spotlight-V100/Store-V2
+share  edit  follow 
+edited Mar 21 '18 at 15:32
+answered Jul 2 '14 at 13:12
+
+zee
+85077 silver badges99 bronze badges
+add a comment
+
+48
+
+The following command not only find you the top 50 largest files (>100M) on your filesystem, but also sort (GNU sort) by the biggest:
+
+find / -xdev -type f -size +100M -exec du -sh {} ';' | sort -rh | head -n50
+-xdev Don't descend directories on other filesystems.
+
+On BSD find use -x which is equivalent to the deprecated -xdev primary.
+
+For all files and directories, it's even easier:
+
+du -ahx / | sort -rh | head -20
+(the -x flag is what's required to constrain du to a single filesystem)
+
+If you're not using GNU sort (from coreutils), use it without -h:
+
+du -ax / | sort -rn | head -20
+For current directory only (for quicker results), replace / with ..
+
+share  edit  follow 
+edited Dec 5 '19 at 0:17
+answered Feb 1 '16 at 11:26
+
+kenorb
+13.4k66 gold badges9696 silver badges136136 bronze badges
+1
+I would mention that this method is good because -h shows human readable output, and add a sample output. – Ciro Santilli 冠状病毒审查六四事件法轮功 May 21 '19 at 13:32
+Very good solution. Thank you. – Tigin Aug 6 '19 at 11:04
